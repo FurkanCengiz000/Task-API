@@ -193,4 +193,29 @@ class TaskApiTest extends TestCase
        $response->assertStatus(404);
 
     }
+
+    public function test_task_can_be_deleted_successfully()
+    {
+        $task = Task::factory()->create();
+
+        $response = $this->deleteJson("api/tasks/{$task->code}");
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseMissing('tasks', [
+            'code' => $task->code
+        ]);
+
+    }
+
+    public function test_task_delete_should_return_404_if_task_not_found()
+    {
+        $random_uuid = (string) Str::uuid();
+
+        $response = $this->deleteJson("api/tasks/{$random_uuid}");
+
+        $response->assertStatus(404);
+
+    }
+
 }

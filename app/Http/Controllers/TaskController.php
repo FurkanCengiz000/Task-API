@@ -30,21 +30,30 @@ class TaskController extends Controller
 
     public function update($code, TaskRequest $request)
     {
-        try
-        {
+        try {
             $dto = TaskData::fromRequest($request);
             $task = $this->service->updateTask($code, $dto);
 
             return (new TaskResource($task))->response()->setStatusCode(200);
-        }
-        catch (ModelNotFoundException $e)
-        {
+        } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Task not found'], 404);
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
     }
 
+    public function destroy($code)
+    {
+        try
+        {
+            $this->service->deleteTask($code);
+
+            return response()->json(['message' => 'Task deleted successfully'], 200);
+        }
+        catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Task not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
 }

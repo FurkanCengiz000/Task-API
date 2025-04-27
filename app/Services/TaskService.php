@@ -23,4 +23,9 @@ class TaskService
         return $this->repository->updateTask($code, $data);
     }
 
+    public function deleteTask($code)
+    {
+        return $this->repository->deleteTask($code);
+    }
+
 }

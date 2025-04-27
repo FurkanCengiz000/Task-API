@@ -22,6 +22,14 @@ class TaskRepository
 
     }
 
+    public function deleteTask($code)
+    {
+        $task = $this->findTaskByCode($code);
+        $task->delete();
+
+        return $task;
+    }
+
     private function findTaskByCode($code): Task
     {
         return Task::where('code', $code)->firstOrFail();
