@@ -15,8 +15,12 @@ class TaskService
 
     public function storeTask(TaskData $data)
     {
-        // send dto and code to TaskReposity's storeTask() method then return
         return $this->repository->storeTask($data);
+    }
+
+    public function updateTask($code, TaskData $data)
+    {
+        return $this->repository->updateTask($code, $data);
     }
 
 }

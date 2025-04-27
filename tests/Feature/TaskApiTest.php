@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Task;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
+use Illuminate\Support\Str;
 
 class TaskApiTest extends TestCase
 {
@@ -84,6 +86,111 @@ class TaskApiTest extends TestCase
         $response->assertJsonValidationErrors([
             'status',
         ]);
+    }
+
+    public function test_task_can_be_updated_successfully()
+    {
+        // Find To Task
+        $task = Task::factory()->create();
+
+        // Create Test Data
+        $payload = [
+            'title' => $this->faker->sentence,
+            'description' => $this->faker->paragraph,
+            'status' => 'pending'
+        ];
+
+       // response tasks put method
+       $response = $this->putJson("api/tasks/{$task->code}", $payload);
+
+       // Check the response status code
+       $response->assertStatus(200);
+
+       // Check the data
+       $response->assertJsonFragment([
+        'title' => $payload['title'],
+        'description' => $payload['description'],
+        'status' => $payload['status'],
+    ]);
+
+       // Check the json data to make sure json data format is correct
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'code',
+                'title',
+                'description',
+                'status',
+                'created_at',
+                'updated_at'
+            ],
+        ]);
+
+        // Check the database column to make sure the related column is exist
+        $this->assertDatabaseHas('tasks', [
+            'code' => $task->code,
+            'title' => $payload['title'],
+            'description' => $payload['description'],
+            'status' => $payload['status']
+        ]);
+    }
+
+    public function test_task_update_should_fail_with_missing_required_fields()
+    {
+        $payload = [
+            'title' => '',
+            'description' => '',
+            'status' => ''
+        ];
+
+        $task = Task::factory()->create();
+
+        $response = $this->putJson("api/tasks/{$task->code}", $payload);
+
+
+        $response->assertStatus(422);
+
+        $response->assertJsonValidationErrors([
+            'title',
+            'description',
+        ]);
+
+    }
+
+    public function test_task_update_should_fail_with_invalid_status()
+    {
+        $payload = [
+            'title' => $this->faker->sentence,
+            'description' => $this->faker->paragraph,
+            'status' => 'asd'
+        ];
+
+        $task = Task::factory()->create();
+
+        $response = $this->putJson("api/tasks/{$task->code}", $payload);
+
+        $response->assertStatus(422);
+
+        $response->assertJsonValidationErrors([
+            'status'
+        ]);
+    }
+
+    public function test_task_update_should_return_404_if_task_not_found()
+    {
+        $payload = [
+            'title' => $this->faker->sentence,
+            'description' => $this->faker->paragraph,
+            'status' => 'pending'
+        ];
+
+        $random_uuid = (string) Str::uuid();
+
+        // response tasks put method
+       $response = $this->putJson("api/tasks/{$random_uuid}", $payload);
+
+       // Check the response status code
+       $response->assertStatus(404);
 
     }
 }
